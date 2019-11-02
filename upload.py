@@ -24,11 +24,12 @@ app.config.update(
 ALLOWED_EXTENSIONS = set(['xls','xlsx','csv'])
 
 def allowed_file(filename):
-    return '.' in filename and \
+	# checks if extension is valid
+	return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def label_to_int(file_df):
-	# finds labels and turns them to integers
+	# finds unique string labels and turns them to integers
 	for col,dtype in file_df.dtypes.iteritems():
 		if dtype == object:
 			dict = {}
@@ -122,7 +123,6 @@ def chosen_method():
 
 @app.route('/bestfeatures')
 def bestfeatures():
-	# for classification problem
 	global secured_file, result
 
 	file_df = pd.read_csv(os.path.join(app.root_path, secured_file))
@@ -131,9 +131,9 @@ def bestfeatures():
 	num_of_feat = len(list(X))
 
 	if result == 'regression':
-		bestfeatures = SelectKBest(score_func=f_regression, k=num_of_feat )
+		bestfeatures = SelectKBest(score_func=f_regression, k=num_of_feat) #regression
 	else:
-		bestfeatures = SelectKBest(score_func=chi2, k=num_of_feat)
+		bestfeatures = SelectKBest(score_func=chi2, k=num_of_feat) #classification
 
 	fit = bestfeatures.fit(X,y)
 	dfscores = pd.DataFrame(fit.scores_)
@@ -164,11 +164,7 @@ def correlation():
 	fig.savefig(img)
 	img.seek(0)
 	return send_file(img, mimetype='image/png')
-	
-
-	#return render_template("correlation.html", html_data=img)
 
 
 if __name__ == '__main__':
-
 	app.run(debug=True)
